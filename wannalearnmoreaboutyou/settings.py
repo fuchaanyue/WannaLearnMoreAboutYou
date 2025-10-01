@@ -30,39 +30,44 @@ else:
 # Load environment variables with explicit UTF-8 encoding
 env_path = os.path.join(BASE_DIR, '.env')
 if os.path.exists(env_path):
-    # Read and decode the file with UTF-8 to avoid BOM issues
-    with open(env_path, 'rb') as f:
-        raw_content = f.read()
-        # Handle BOM if present
-        if raw_content.startswith(b'\xff\xfe') or raw_content.startswith(b'\xfe\xff'):
-            # UTF-16 BOM
-            content = raw_content.decode('utf-16')
-        elif raw_content.startswith(b'\xef\xbb\xbf'):
-            # UTF-8 BOM
-            content = raw_content.decode('utf-8-sig')
-        else:
-            # Standard UTF-8
-            content = raw_content.decode('utf-8')
-    
-    # Write clean content to a temporary location or process directly
-    lines = content.strip().split('\n')
-    env_dict = {}
-    for line in lines:
-        if line.strip() and not line.startswith('#'):
-            if '=' in line:
-                key, value = line.split('=', 1)
-                env_dict[key.strip()] = value.strip()
-    
-    # Create a mock config function
-    def config(key, default=None, cast=None):
-        value = env_dict.get(key, default)
-        if cast == bool:
-            if isinstance(value, str):
-                return value.lower() in ['true', '1', 'yes', 'on']
-            return bool(value)
-        elif cast is not None:
-            return cast(value)
-        return value
+    try:
+        # Read and decode the file with UTF-8 to avoid BOM issues
+        with open(env_path, 'rb') as f:
+            raw_content = f.read()
+            # Handle BOM if present
+            if raw_content.startswith(b'\xff\xfe') or raw_content.startswith(b'\xfe\xff'):
+                # UTF-16 BOM
+                content = raw_content.decode('utf-16')
+            elif raw_content.startswith(b'\xef\xbb\xbf'):
+                # UTF-8 BOM
+                content = raw_content.decode('utf-8-sig')
+            else:
+                # Standard UTF-8
+                content = raw_content.decode('utf-8')
+        
+        # Write clean content to a temporary location or process directly
+        lines = content.strip().split('\n')
+        env_dict = {}
+        for line in lines:
+            if line.strip() and not line.startswith('#'):
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    env_dict[key.strip()] = value.strip()
+        
+        # Create a mock config function
+        def config(key, default=None, cast=None):
+            value = env_dict.get(key, default)
+            if cast == bool:
+                if isinstance(value, str):
+                    return value.lower() in ['true', '1', 'yes', 'on']
+                return bool(value)
+            elif cast is not None:
+                return cast(value)
+            return value
+    except Exception as e:
+        # If there's any error reading the .env file, fall back to python-decouple
+        print(f"读取.env文件时出错: {e}")
+        from decouple import config
 else:
     # Fallback to original config if .env doesn't exist
     from decouple import config

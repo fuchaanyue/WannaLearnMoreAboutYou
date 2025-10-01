@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime
+from pathlib import Path
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
@@ -331,52 +332,53 @@ def feedback(request):
     user_name = request.session.get("user_name", "朋友")
     
     if request.method == "POST":
-        # 获取所有问题的答案
-        question1 = request.POST.get("question1", "").strip()
-        question2 = request.POST.get("question2", "").strip()
-        question3 = request.POST.get("question3", "").strip()
-        feedback_text = request.POST.get("feedback", "").strip()
-        
-        # 检查必填项
-        if not question1 or not question2:
-            # 如果必填项为空，返回错误信息
-            return render(request, "quiz/feedback.html", {
+        try:
+            # 获取所有问题的答案
+            question1 = request.POST.get("question1", "").strip()
+            question2 = request.POST.get("question2", "").strip()
+            question3 = request.POST.get("question3", "").strip()
+            feedback_text = request.POST.get("feedback", "").strip()
+            
+            # 检查必填项
+            if not question1 or not question2:
+                # 如果必填项为空，返回错误信息
+                return render(request, "quiz/feedback.html", {
+                    "user_name": user_name,
+                    "error": "请填写所有必填项（带 * 的问题）。",
+                    "question1": question1,
+                    "question2": question2,
+                    "question3": question3,
+                    "feedback_text": feedback_text
+                })
+            
+            # 整合用户提交的所有数据
+            user_data = {
                 "user_name": user_name,
-                "error": "请填写所有必填项（带 * 的问题）。",
-                "question1": question1,
-                "question2": question2,
-                "question3": question3,
-                "feedback_text": feedback_text
-            })
-        
-        # 整合用户提交的所有数据
-        user_data = {
-            "user_name": user_name,
-            "question1": {
-                "question": "1. 如果可以选择变成任意的东西，你想变成些什么，能说说你的想法吗？",
-                "answer": question1
-            },
-            "question2": {
-                "question": "2. 很好奇我留给你的初印象是什么？",
-                "answer": question2
-            },
-            "question3": {
-                "question": "3. 有没有什么东西是我不知道但你能告诉我的？（不强求哈哈哈哈哈）",
-                "answer": question3
-            },
-            "feedback": {
-                "question": "4. 还有其他想对我说的吗？",
-                "answer": feedback_text
-            },
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        
-        # 保存到会话中以便在thank_you页面使用
-        request.session['feedback_data'] = user_data
-        request.session.modified = True
-        
-        # 将数据转换为纯文本格式用于发送邮件和保存
-        text_data = f"""用户反馈数据
+                "question1": {
+                    "question": "1. 如果可以选择变成任意的东西，你想变成些什么，能说说你的想法吗？",
+                    "answer": question1
+                },
+                "question2": {
+                    "question": "2. 很好奇我留给你的初印象是什么？",
+                    "answer": question2
+                },
+                "question3": {
+                    "question": "3. 有没有什么东西是我不知道但你能告诉我的？（不强求哈哈哈哈哈）",
+                    "answer": question3
+                },
+                "feedback": {
+                    "question": "4. 还有其他想对我说的吗？",
+                    "answer": feedback_text
+                },
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            
+            # 保存到会话中以便在thank_you页面使用
+            request.session['feedback_data'] = user_data
+            request.session.modified = True
+            
+            # 将数据转换为纯文本格式用于发送邮件和保存
+            text_data = f"""用户反馈数据
 ================
 
 用户名: {user_data['user_name']}
@@ -393,80 +395,87 @@ def feedback(request):
 
 问题4: {user_data['feedback']['question']}
 回答4: {user_data['feedback']['answer']}"""
-        
-        # 发送邮件
-        try:
-            print(f"尝试发送邮件: EMAIL_HOST={settings.EMAIL_HOST}, EMAIL_PORT={settings.EMAIL_PORT}, EMAIL_HOST_USER={settings.EMAIL_HOST_USER}")
-            if settings.EMAIL_HOST_USER:
-                # 生成文件名（使用用户名和时间戳）
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                filename = f"{user_name}_{timestamp}.txt"
-                
-                # 创建邮件
-                email = EmailMessage(
-                    subject=f'用户反馈 - {user_name}',
-                    body='这是一份来自网站的用户反馈，请查看附件中的文本文件。',
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[settings.EMAIL_HOST_USER],  # 发送给自己
-                )
-                email.attach(filename, text_data, 'text/plain')
-                
-                # 发送邮件
-                result = email.send()
-                print(f"邮件发送结果: {result}")
-            else:
-                print("未配置邮箱用户，跳过发送邮件")
-        except Exception as e:
-            # 记录邮件发送错误但不中断流程
-            import traceback
-            print(f"发送邮件失败: {e}")
-            print(f"详细错误信息: {traceback.format_exc()}")
-        
-        # 保存到腾讯云COS
-        try:
-            # 创建COS客户端
-            if settings.TENCENT_COS_SECRET_ID and settings.TENCENT_COS_SECRET_KEY:
-                config = CosConfig(
-                    Region=settings.TENCENT_COS_REGION,
-                    SecretId=settings.TENCENT_COS_SECRET_ID,
-                    SecretKey=settings.TENCENT_COS_SECRET_KEY
-                )
-                client = CosS3Client(config)
-                
-                # 生成文件名（使用用户名和时间戳）
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                filename = f"feedback/{user_name}_{timestamp}.txt"
-                
-                # 添加更多调试信息
-                print(f"尝试上传到COS: bucket={settings.TENCENT_COS_BUCKET}, region={settings.TENCENT_COS_REGION}")
-                response = client.put_object(
-                    Bucket=settings.TENCENT_COS_BUCKET,
-                    Body=text_data,
-                    Key=filename,
-                    EnableMD5=False
-                )
-                print(f"COS上传成功: {response}")
-        except Exception as e:
-            # 如果COS上传失败，记录详细错误但不中断流程
-            import traceback
-            print(f"上传到COS失败: {e}")
-            print(f"详细错误信息: {traceback.format_exc()}")
-            print(f"检查配置 - SECRET_ID: {bool(settings.TENCENT_COS_SECRET_ID)}")
-            print(f"检查配置 - SECRET_KEY: {bool(settings.TENCENT_COS_SECRET_KEY)}")
-            print(f"检查配置 - REGION: {settings.TENCENT_COS_REGION}")
-            print(f"检查配置 - BUCKET: {settings.TENCENT_COS_BUCKET}")
             
-            # 添加额外的调试信息
+            # 发送邮件
             try:
-                # 尝试列出存储桶内容以验证权限
-                print("尝试列出存储桶内容以验证权限...")
-                response = client.list_objects(Bucket=settings.TENCENT_COS_BUCKET, MaxKeys=1)
-                print(f"列出对象成功: {response}")
-            except Exception as list_error:
-                print(f"列出对象失败: {list_error}")
-        
-        # 重定向到thank_you_after_feedback页面
-        return redirect('thank_you_after_feedback')
+                print(f"尝试发送邮件: EMAIL_HOST={settings.EMAIL_HOST}, EMAIL_PORT={settings.EMAIL_PORT}, EMAIL_HOST_USER={settings.EMAIL_HOST_USER}")
+                if settings.EMAIL_HOST_USER:
+                    # 生成文件名（使用用户名和时间戳）
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"{user_name}_{timestamp}.txt"
+                    
+                    # 创建邮件
+                    email = EmailMessage(
+                        subject=f'用户反馈 - {user_name}',
+                        body='这是一份来自网站的用户反馈，请查看附件中的文本文件。',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=[settings.EMAIL_HOST_USER],  # 发送给自己
+                    )
+                    email.attach(filename, text_data, 'text/plain')
+                    
+                    # 发送邮件
+                    result = email.send()
+                    print(f"邮件发送结果: {result}")
+                else:
+                    print("未配置邮箱用户，跳过发送邮件")
+            except Exception as e:
+                # 记录邮件发送错误但不中断流程
+                import traceback
+                print(f"发送邮件失败: {e}")
+                print(f"详细错误信息: {traceback.format_exc()}")
+            
+            # 保存到腾讯云COS
+            try:
+                # 创建COS客户端
+                if settings.TENCENT_COS_SECRET_ID and settings.TENCENT_COS_SECRET_KEY:
+                    config = CosConfig(
+                        Region=settings.TENCENT_COS_REGION,
+                        SecretId=settings.TENCENT_COS_SECRET_ID,
+                        SecretKey=settings.TENCENT_COS_SECRET_KEY
+                    )
+                    client = CosS3Client(config)
+                    
+                    # 生成文件名（使用用户名和时间戳）
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"feedback/{user_name}_{timestamp}.txt"
+                    
+                    # 添加更多调试信息
+                    print(f"尝试上传到COS: bucket={settings.TENCENT_COS_BUCKET}, region={settings.TENCENT_COS_REGION}")
+                    response = client.put_object(
+                        Bucket=settings.TENCENT_COS_BUCKET,
+                        Body=text_data,
+                        Key=filename,
+                        EnableMD5=False
+                    )
+                    print(f"COS上传成功: {response}")
+            except Exception as e:
+                # 如果COS上传失败，记录详细错误但不中断流程
+                import traceback
+                print(f"上传到COS失败: {e}")
+                print(f"详细错误信息: {traceback.format_exc()}")
+                print(f"检查配置 - SECRET_ID: {bool(settings.TENCENT_COS_SECRET_ID)}")
+                print(f"检查配置 - SECRET_KEY: {bool(settings.TENCENT_COS_SECRET_KEY)}")
+                print(f"检查配置 - REGION: {settings.TENCENT_COS_REGION}")
+                print(f"检查配置 - BUCKET: {settings.TENCENT_COS_BUCKET}")
+                
+                # 添加额外的调试信息
+                try:
+                    # 尝试列出存储桶内容以验证权限
+                    print("尝试列出存储桶内容以验证权限...")
+                    response = client.list_objects(Bucket=settings.TENCENT_COS_BUCKET, MaxKeys=1)
+                    print(f"列出对象成功: {response}")
+                except Exception as list_error:
+                    print(f"列出对象失败: {list_error}")
+            
+            # 重定向到thank_you_after_feedback页面
+            return redirect('thank_you_after_feedback')
+        except Exception as e:
+            # 捕获所有其他异常并记录错误
+            import traceback
+            print(f"反馈处理过程中发生错误: {e}")
+            print(f"详细错误信息: {traceback.format_exc()}")
+            # 即使出现错误也重定向到感谢页面，避免用户看到500错误
+            return redirect('thank_you_after_feedback')
         
     # GET请求时显示表单
     return render(request, "quiz/feedback.html", {
@@ -506,22 +515,29 @@ def qrcode_image(request):
     if not request.session.get("quiz_passed"):
         return HttpResponseForbidden("Access denied")
     
-    # Check if we're in Render environment
-    import os
-    if 'RENDER' in os.environ:
-        # In Render, use the mounted file
-        qr_code_path = Path('/etc/secrets/wechat_qr')
-    else:
-        # Local development or other environments
-        from django.conf import settings
-        qr_code_path = settings.PRIVATE_FILES_DIR / "wechat_qr.jpg"
-    
-    if not qr_code_path.exists():
-        # Try with .png extension
-        qr_code_path = qr_code_path.with_suffix('.png')
+    try:
+        # Check if we're in Render environment
+        import os
+        if 'RENDER' in os.environ:
+            # In Render, use the mounted file
+            qr_code_path = Path('/etc/secrets/wechat_qr')
+        else:
+            # Local development or other environments
+            from django.conf import settings
+            qr_code_path = settings.PRIVATE_FILES_DIR / "wechat_qr.jpg"
         
-    if not qr_code_path.exists():
+        if not qr_code_path.exists():
+            # Try with .png extension
+            qr_code_path = qr_code_path.with_suffix('.png')
+            
+        if not qr_code_path.exists():
+            return HttpResponse("QR code image not found", status=404)
+        
+        with open(qr_code_path, "rb") as f:
+            return HttpResponse(f.read(), content_type="image/png")
+    except Exception as e:
+        # Handle any exceptions that might occur
+        import traceback
+        print(f"二维码加载错误: {e}")
+        print(f"详细错误信息: {traceback.format_exc()}")
         return HttpResponse("QR code image not found", status=404)
-    
-    with open(qr_code_path, "rb") as f:
-        return HttpResponse(f.read(), content_type="image/png")
