@@ -6,8 +6,8 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.urls import reverse
 from django.core.mail import EmailMessage
-from qcloud_cos import CosConfig
-from qcloud_cos import CosS3Client
+from qcloud_cos.cos_client import CosConfig
+from qcloud_cos.cos_client import CosS3Client
 import sys
 import logging
 from decouple import config

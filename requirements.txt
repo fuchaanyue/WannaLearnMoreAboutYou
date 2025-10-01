@@ -3,4 +3,4 @@ gunicorn
 python-decouple
 # aliyun-python-sdk-core
 # oss2
-qcloud_cos
+cos-python-sdk-v5
