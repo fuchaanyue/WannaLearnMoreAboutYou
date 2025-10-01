@@ -18,4 +18,4 @@ services:
     
     # 启动命令 - 使用Gunicorn运行Django WSGI应用
     # 注意：不要使用默认的"gunicorn app:app"，我们没有app.py文件
-    startCommand: "gunicorn WannaLearnMoreAboutYou.wsgi:application"
+    startCommand: "gunicorn wsgi:application"
