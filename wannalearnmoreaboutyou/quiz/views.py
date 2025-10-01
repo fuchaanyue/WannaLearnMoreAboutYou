@@ -6,12 +6,14 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.urls import reverse
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, get_connection
 from qcloud_cos.cos_client import CosConfig
 from qcloud_cos.cos_client import CosS3Client
 import sys
 import logging
 from decouple import config
+import threading
+import time
 
 def get_quiz_questions():
     """
@@ -423,20 +425,43 @@ def feedback(request):
                     email.attach(filename, text_data, 'text/plain')
                     
                     # 使用线程发送邮件以避免阻塞
-                    import threading
                     def send_email_async(email):
                         try:
                             print(f"开始发送邮件到: {settings.EMAIL_HOST_USER}")
+                            # 显式创建连接以获得更好的错误处理
+                            connection = get_connection(
+                                backend=settings.EMAIL_BACKEND,
+                                host=settings.EMAIL_HOST,
+                                port=settings.EMAIL_PORT,
+                                username=settings.EMAIL_HOST_USER,
+                                password=settings.EMAIL_HOST_PASSWORD,
+                                use_tls=settings.EMAIL_USE_TLS,
+                            )
+                            
+                            # 尝试连接到SMTP服务器
+                            print(f"正在连接到SMTP服务器: {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
+                            connection.open()
+                            print("SMTP连接成功")
+                            
+                            # 发送邮件
                             result = email.send()
                             print(f"邮件发送结果: {result}")
                             if result == 0:
                                 print("警告：邮件发送可能失败，返回值为0")
                             else:
                                 print(f"邮件发送成功，发送了 {result} 封邮件")
+                            
+                            # 关闭连接
+                            connection.close()
                         except Exception as e:
                             import traceback
                             print(f"异步发送邮件失败: {e}")
                             print(f"详细错误信息: {traceback.format_exc()}")
+                            # 尝试关闭连接（如果打开的话）
+                            try:
+                                connection.close()
+                            except:
+                                pass
                     
                     email_thread = threading.Thread(target=send_email_async, args=(email,))
                     email_thread.daemon = True  # 设置为守护线程
@@ -467,7 +492,6 @@ def feedback(request):
                     filename = f"feedback/{user_name}_{timestamp}.txt"
                     
                     # 使用线程上传到COS以避免阻塞
-                    import threading
                     def upload_to_cos_async(client, bucket, body, key):
                         try:
                             # 添加更多调试信息
