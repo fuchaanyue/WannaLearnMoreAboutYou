@@ -506,10 +506,21 @@ def qrcode_image(request):
     if not request.session.get("quiz_passed"):
         return HttpResponseForbidden("Access denied")
     
-    # Serve the QR code image
-    qr_code_path = os.path.join(settings.PRIVATE_FILES_DIR, "wechat_qr.jpg")
+    # Check if we're in Render environment
+    import os
+    if 'RENDER' in os.environ:
+        # In Render, use the mounted file
+        qr_code_path = Path('/etc/secrets/wechat_qr')
+    else:
+        # Local development or other environments
+        from django.conf import settings
+        qr_code_path = settings.PRIVATE_FILES_DIR / "wechat_qr.jpg"
     
-    if not os.path.exists(qr_code_path):
+    if not qr_code_path.exists():
+        # Try with .png extension
+        qr_code_path = qr_code_path.with_suffix('.png')
+        
+    if not qr_code_path.exists():
         return HttpResponse("QR code image not found", status=404)
     
     with open(qr_code_path, "rb") as f:

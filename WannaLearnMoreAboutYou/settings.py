@@ -16,11 +16,18 @@ from decouple import Config, RepositoryEnv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Define PRIVATE_FILES_DIR
-PRIVATE_FILES_DIR = BASE_DIR / "private_files"
+# Define PRIVATE_FILES_DIR - Check for Render environment first
+import os
+
+# Check if we're in Render environment with mounted files
+if 'RENDER' in os.environ:
+    # In Render, use the mounted file path
+    PRIVATE_FILES_DIR = Path('/etc/secrets')
+else:
+    # Local development or other environments
+    PRIVATE_FILES_DIR = BASE_DIR / "private_files"
 
 # Load environment variables with explicit UTF-8 encoding
-import os
 env_path = os.path.join(BASE_DIR, '.env')
 if os.path.exists(env_path):
     # Read and decode the file with UTF-8 to avoid BOM issues
@@ -177,12 +184,9 @@ SESSION_COOKIE_AGE = 3600  # 1 hour
 SESSION_SAVE_EVERY_REQUEST = True
 
 # Private files directory
-PRIVATE_FILES_DIR = BASE_DIR / "private_files"
+# Already defined above with environment-specific logic
 
 # 腾讯云COS配置
-import os
-from decouple import config
-
 TENCENT_COS_SECRET_ID = config('TENCENT_COS_SECRET_ID', default='')
 TENCENT_COS_SECRET_KEY = config('TENCENT_COS_SECRET_KEY', default='')
 TENCENT_COS_REGION = config('TENCENT_COS_REGION', default='')

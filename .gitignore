@@ -22,3 +22,7 @@ ENV/
 
 # Environment files
 .env
+
+# Private files
+private_files/
+/etc/secrets/
