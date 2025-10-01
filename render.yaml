@@ -14,6 +14,14 @@ services:
         value: 3.10.6
       - key: DJANGO_SETTINGS_MODULE
         value: wannalearnmoreaboutyou.settings
+      - key: DB_NAME
+        value: wannalearnmoreaboutyou
+      - key: DB_USER
+        value: wannalearnmoreaboutyou_user
+      - key: DB_PASSWORD
+        value: your_database_password
+      - key: DB_HOST
+        value: localhost
     
     # 构建命令 - 安装依赖并收集静态文件
     buildCommand: "./build.sh"
