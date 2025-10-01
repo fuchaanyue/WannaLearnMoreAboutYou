@@ -1,9 +1,21 @@
+# Render配置文件
+# 该文件用于指定Render平台如何构建和部署我们的Django应用
+
 services:
+  # Web服务配置
   - type: web
     name: wanna-learn-more-about-you
     env: python
-    buildCommand: "./build.sh"
-    startCommand: "gunicorn WannaLearnMoreAboutYou.wsgi:application"
+    
+    # Python版本设置
+    # 使用Python 3.10.6确保与所有依赖包兼容
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.6
+    
+    # 构建命令 - 安装依赖并收集静态文件
+    buildCommand: "./build.sh"
+    
+    # 启动命令 - 使用Gunicorn运行Django WSGI应用
+    # 注意：不要使用默认的"gunicorn app:app"，我们没有app.py文件
+    startCommand: "gunicorn WannaLearnMoreAboutYou.wsgi:application"
