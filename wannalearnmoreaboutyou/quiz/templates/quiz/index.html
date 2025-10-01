@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            background: #262626; /* 85% black equivalent - 15% gray */
+            color: #f0f0f0; /* softer white */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .greeting {
+            margin-bottom: 60px;
+        }
+        
+        .greeting p:first-child {
+            font-size: 70px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 40px;
+            color: #f0f0f0; /* softer white */
+            line-height: 0.9;
+            text-transform: uppercase;
+        }
+        
+        .greeting p:nth-child(2) {
+            font-size: 24px;
+            font-weight: 300;
+            color: #d0d0d0; /* softer gray */
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        
+        .greeting p:nth-child(3) {
+            font-size: 24px;
+            font-weight: 300;
+            color: #d0d0d0; /* softer gray */
+            margin-bottom: 45px;
+            line-height: 1.4;
+        }
+        
+        .greeting p:last-child {
+            font-family: "SimSun", "Songti SC", serif;
+            font-size: 32px;
+            font-weight: bold;
+            color: #f0f0f0; /* softer white */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-top: 40px;
+            border-top: 1px solid #555555;
+            line-height: 1.1;
+        }
+        
+        .form-wrapper {
+            background: transparent;
+            padding: 0;
+        }
+        
+        .form-group {
+            margin: 35px 0;
+        }
+        
+        label {
+            display: block;
+            font-size: 22px;
+            font-weight: 300;
+            margin-bottom: 30px;
+            color: #f0f0f0; /* softer white */
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 25px 0;
+            font-size: 22px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #888888; /* softer gray */
+            color: #f0f0f0; /* softer white */
+            transition: all 0.3s ease;
+            box-shadow: none;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-bottom: 1px solid #ffffff;
+        }
+        
+        input[type="text"]::placeholder {
+            color: #999999; /* softer gray */
+            font-weight: 300;
+        }
+        
+        input[type="text"]:valid {
+            border-bottom: 1px solid #777777;
+        }
+        
+        button {
+            width: 100%;
+            padding: 25px 0;
+            font-size: 22px;
+            background: transparent;
+            color: #f0f0f0; /* softer white */
+            border: none;
+            border-bottom: 1px solid #555555;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-align: left;
+            position: relative;
+        }
+        
+        button:after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #f0f0f0;
+            transition: width 0.3s ease;
+        }
+        
+        button:hover:after {
+            width: 100%;
+        }
+        
+        .error {
+            color: #ff6666;
+            font-size: 18px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #555555;
+            font-weight: 300;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 30px 15px;
+            }
+            
+            .greeting p:first-child {
+                font-size: 46px;
+                letter-spacing: -1.5px;
+            }
+            
+            .greeting p:last-child {
+                font-size: 24px;
+            }
+            
+            label, input[type="text"], button {
+                font-size: 18px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .greeting {
+                margin-bottom: 40px;
+            }
+            
+            .greeting p:first-child {
+                font-size: 36px;
+            }
+            
+            .greeting p:nth-child(2),
+            .greeting p:nth-child(3) {
+                font-size: 18px;
+            }
+            
+            .greeting p:last-child {
+                font-size: 20px;
+                padding-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="greeting">
+            <p>你好</p>
+            <p>很高兴您能点进来</p>
+            <p>如果可以的话</p>
+            <p>我想要了解更多的你</p>
+        </div>
+        
+        <div class="form-wrapper">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">你希望我如何称呼你？</label>
+                    <input type="text" id="name" name="name" placeholder="输入你的名字" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit">开始</button>
+                </div>
+                {% if error %}
+                    <div class="error">{{ error }}</div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</body>
+</html>

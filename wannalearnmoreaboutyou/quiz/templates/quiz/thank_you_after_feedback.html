@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>感谢</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            background: #262626; /* 85% black equivalent - 15% gray */
+            color: #f0f0f0; /* softer white */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 20px;
+            text-align: center;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .message {
+            font-size: 28px;
+            font-weight: 400;
+            color: #f0f0f0; /* softer white */
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .qrcode-container {
+            text-align: center;
+            margin: 50px 0 30px;
+        }
+        
+        .qrcode-label {
+            font-size: 20px;
+            font-weight: 300;
+            color: #d0d0d0; /* softer gray */
+            margin-bottom: 25px;
+        }
+        
+        .qrcode-image {
+            max-width: 300px;
+            height: auto;
+            border: 1px solid #888888; /* softer gray */
+        }
+        
+        .qrcode-note {
+            font-size: 14px;
+            color: #bbbbbb;
+            margin-top: 20px;
+            font-weight: 300;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            margin-top: 10px;
+        }
+        
+        .nav-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            /* 移除了边框 */
+            border: none;
+            background: transparent;
+            color: #bbbbbb;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 300;
+        }
+        
+        .nav-button:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #f0f0f0;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-button:hover:after {
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 30px 15px;
+            }
+            
+            .message {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .message {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-buttons">
+            <a href="{% url 'index' %}" class="nav-button">← 返回首页</a>
+            <a href="{% url 'feedback' %}" class="nav-button">返回上一级</a>
+        </div>
+        
+        <div class="message">
+            谢谢你给了我再一次认识你的机会<br><br>
+            下面这个是我的小小空间
+        </div>
+        
+        <div class="qrcode-container">
+            <div class="qrcode-label">
+                如果你愿意<br><br>
+                欢迎你添加我的小号</div>
+            <img class="qrcode-image" src="{% url 'qrcode' %}" alt="WeChat QR Code">
+            <div class="qrcode-note">请添加的时候备注填写你希望我对你的称呼哟</div>
+        </div>
+    </div>
+</body>
+</html>
