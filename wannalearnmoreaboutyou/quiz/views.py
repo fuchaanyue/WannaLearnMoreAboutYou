@@ -14,6 +14,7 @@ import logging
 from decouple import config
 import threading
 import time
+import socket
 
 def get_quiz_questions():
     """
@@ -453,6 +454,22 @@ def feedback(request):
                             
                             # 关闭连接
                             connection.close()
+                        except socket.gaierror as e:
+                            print(f"DNS解析错误，无法解析SMTP主机: {e}")
+                            print("请检查EMAIL_HOST配置是否正确")
+                        except socket.timeout as e:
+                            print(f"连接SMTP服务器超时: {e}")
+                            print("可能是网络问题或SMTP服务器不可达")
+                        except ConnectionRefusedError as e:
+                            print(f"连接被SMTP服务器拒绝: {e}")
+                            print("请检查EMAIL_PORT配置或SMTP服务器状态")
+                        except OSError as e:
+                            if e.errno == 101:  # Network is unreachable
+                                print("网络不可达错误: 无法连接到SMTP服务器")
+                                print("这可能是因为部署环境的网络限制导致的")
+                                print("建议检查防火墙设置或联系平台支持")
+                            else:
+                                print(f"网络连接错误: {e}")
                         except Exception as e:
                             import traceback
                             print(f"异步发送邮件失败: {e}")
