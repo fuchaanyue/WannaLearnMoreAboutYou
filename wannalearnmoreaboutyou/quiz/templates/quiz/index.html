@@ -46,14 +46,22 @@
         }
         
         .greeting p:nth-child(2) {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 300;
             color: #d0d0d0; /* softer gray */
             margin-bottom: 20px;
             line-height: 1.4;
         }
-        
+
         .greeting p:nth-child(3) {
+            font-size: 28px;
+            font-weight: 300;
+            color: #d0d0d0; /* softer gray */
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .greeting p:nth-child(4) {
             font-size: 24px;
             font-weight: 300;
             color: #d0d0d0; /* softer gray */
@@ -203,7 +211,8 @@
     <div class="container">
         <div class="greeting">
             <p>你好</p>
-            <p>很高兴您能点进来</p>
+            <p>我是付安粤</p>
+            <p>很高兴你能点进来</p>
             <p>如果可以的话</p>
             <p>我想要了解更多的你</p>
         </div>
@@ -213,7 +222,7 @@
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="name">你希望我如何称呼你？</label>
-                    <input type="text" id="name" name="name" placeholder="输入你的名字" required>
+                    <input type="text" id="name" name="name" placeholder="请输入你希望我对你的称呼" required>
                 </div>
                 <div class="form-group">
                     <button type="submit">开始</button>
