@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, FileResponse
 from django.conf import settings
 from django.urls import reverse
 from django.core.mail import EmailMessage, get_connection
@@ -609,8 +609,8 @@ def qrcode_image(request):
             return HttpResponse("QR code image not found", status=404)
         
         print(f"成功找到二维码文件: {qr_code_path}")
-        with open(qr_code_path, "rb") as f:
-            return HttpResponse(f.read(), content_type="image/jpeg")
+        # 使用FileResponse返回图片
+        return FileResponse(open(qr_code_path, 'rb'), content_type='image/jpeg')
     except Exception as e:
         # Handle any exceptions that might occur
         import traceback
