@@ -324,24 +324,33 @@ def handle_quiz_post(request):
         return redirect("quiz_with_hint_error", hint_index=hint_index, error="答案不正确，请再试一次。")
 
 def feedback(request):
+    # 记录请求信息用于调试
+    print(f"Feedback view called with method: {request.method}")
+    
     # Check if user has passed the quiz
     if not request.session.get("quiz_passed", False):
+        print("User has not passed the quiz, redirecting to index")
         return redirect("index")
     
     # Get user name from session
     user_name = request.session.get("user_name", "朋友")
+    print(f"User name: {user_name}")
     
     if request.method == "POST":
         try:
+            print("Processing POST request")
             # 获取所有问题的答案
             question1 = request.POST.get("question1", "").strip()
             question2 = request.POST.get("question2", "").strip()
             question3 = request.POST.get("question3", "").strip()
             feedback_text = request.POST.get("feedback", "").strip()
             
+            print(f"Form data - Q1: {question1}, Q2: {question2}, Q3: {question3}, Feedback: {feedback_text}")
+            
             # 检查必填项
             if not question1 or not question2:
                 # 如果必填项为空，返回错误信息
+                print("Required fields are missing")
                 return render(request, "quiz/feedback.html", {
                     "user_name": user_name,
                     "error": "请填写所有必填项（带 * 的问题）。",
@@ -413,9 +422,22 @@ def feedback(request):
                     )
                     email.attach(filename, text_data, 'text/plain')
                     
-                    # 发送邮件
-                    result = email.send()
-                    print(f"邮件发送结果: {result}")
+                    # 使用线程发送邮件以避免阻塞
+                    import threading
+                    def send_email_async(email):
+                        try:
+                            result = email.send()
+                            print(f"邮件发送结果: {result}")
+                        except Exception as e:
+                            import traceback
+                            print(f"异步发送邮件失败: {e}")
+                            print(f"详细错误信息: {traceback.format_exc()}")
+                    
+                    email_thread = threading.Thread(target=send_email_async, args=(email,))
+                    email_thread.daemon = True  # 设置为守护线程
+                    email_thread.start()
+                    
+                    print("邮件发送任务已启动（异步）")
                 else:
                     print("未配置邮箱用户，跳过发送邮件")
             except Exception as e:
@@ -439,15 +461,29 @@ def feedback(request):
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                     filename = f"feedback/{user_name}_{timestamp}.txt"
                     
-                    # 添加更多调试信息
-                    print(f"尝试上传到COS: bucket={settings.TENCENT_COS_BUCKET}, region={settings.TENCENT_COS_REGION}")
-                    response = client.put_object(
-                        Bucket=settings.TENCENT_COS_BUCKET,
-                        Body=text_data,
-                        Key=filename,
-                        EnableMD5=False
-                    )
-                    print(f"COS上传成功: {response}")
+                    # 使用线程上传到COS以避免阻塞
+                    import threading
+                    def upload_to_cos_async(client, bucket, body, key):
+                        try:
+                            # 添加更多调试信息
+                            print(f"尝试上传到COS: bucket={bucket}, region={settings.TENCENT_COS_REGION}")
+                            response = client.put_object(
+                                Bucket=bucket,
+                                Body=body,
+                                Key=key,
+                                EnableMD5=False
+                            )
+                            print(f"COS上传成功: {response}")
+                        except Exception as e:
+                            import traceback
+                            print(f"异步上传到COS失败: {e}")
+                            print(f"详细错误信息: {traceback.format_exc()}")
+                    
+                    cos_thread = threading.Thread(target=upload_to_cos_async, args=(client, settings.TENCENT_COS_BUCKET, text_data, filename))
+                    cos_thread.daemon = True  # 设置为守护线程
+                    cos_thread.start()
+                    
+                    print("COS上传任务已启动（异步）")
             except Exception as e:
                 # 如果COS上传失败，记录详细错误但不中断流程
                 import traceback
@@ -457,17 +493,9 @@ def feedback(request):
                 print(f"检查配置 - SECRET_KEY: {bool(settings.TENCENT_COS_SECRET_KEY)}")
                 print(f"检查配置 - REGION: {settings.TENCENT_COS_REGION}")
                 print(f"检查配置 - BUCKET: {settings.TENCENT_COS_BUCKET}")
-                
-                # 添加额外的调试信息
-                try:
-                    # 尝试列出存储桶内容以验证权限
-                    print("尝试列出存储桶内容以验证权限...")
-                    response = client.list_objects(Bucket=settings.TENCENT_COS_BUCKET, MaxKeys=1)
-                    print(f"列出对象成功: {response}")
-                except Exception as list_error:
-                    print(f"列出对象失败: {list_error}")
             
             # 重定向到thank_you_after_feedback页面
+            print("Redirecting to thank_you_after_feedback")
             return redirect('thank_you_after_feedback')
         except Exception as e:
             # 捕获所有其他异常并记录错误
@@ -478,6 +506,7 @@ def feedback(request):
             return redirect('thank_you_after_feedback')
         
     # GET请求时显示表单
+    print("Rendering feedback form")
     return render(request, "quiz/feedback.html", {
         "user_name": user_name
     })
