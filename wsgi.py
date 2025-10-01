@@ -8,6 +8,9 @@ import os
 import sys
 from pathlib import Path
 
+import django
+from django.core.management import execute_from_command_line
+
 # Add project root to Python path
 current_path = Path(__file__).parent
 if str(current_path) not in sys.path:
@@ -15,6 +18,12 @@ if str(current_path) not in sys.path:
 
 # Set the correct Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wannalearnmoreaboutyou.settings')
+
+django.setup()
+try:
+    execute_from_command_line(['manage.py', 'migrate', '--no-input'])
+except Exception:
+    pass  # 忽略迁移过程中可能出现的错误
 
 from django.core.wsgi import get_wsgi_application
 

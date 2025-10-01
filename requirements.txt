@@ -1,7 +1,6 @@
 Django==4.2
 gunicorn
 python-decouple
-psycopg2-binary
 # aliyun-python-sdk-core
 # oss2
 cos-python-sdk-v5
