@@ -594,8 +594,8 @@ def qrcode_image(request):
         # Check if we're in Render environment
         import os
         if 'RENDER' in os.environ:
-            # In Render, use the mounted file
-            qr_code_path = Path('/etc/secrets/wechat_qr')
+            # In Render, use the mounted file with correct extension
+            qr_code_path = Path('/etc/secrets/wechat_qr.jpg')
             print(f"在Render环境中查找二维码: {qr_code_path}")
         else:
             # Local development or other environments
@@ -603,19 +603,14 @@ def qrcode_image(request):
             qr_code_path = settings.PRIVATE_FILES_DIR / "wechat_qr.jpg"
             print(f"在本地环境中查找二维码: {qr_code_path}")
         
-        print(f"二维码路径是否存在 (.jpg): {qr_code_path.exists()}")
-        if not qr_code_path.exists():
-            # Try with .png extension
-            qr_code_path = qr_code_path.with_suffix('.png')
-            print(f"二维码路径是否存在 (.png): {qr_code_path.exists()}")
-            
+        print(f"二维码路径是否存在: {qr_code_path.exists()}")
         if not qr_code_path.exists():
             print(f"二维码文件未找到: {qr_code_path}")
             return HttpResponse("QR code image not found", status=404)
         
         print(f"成功找到二维码文件: {qr_code_path}")
         with open(qr_code_path, "rb") as f:
-            return HttpResponse(f.read(), content_type="image/png")
+            return HttpResponse(f.read(), content_type="image/jpeg")
     except Exception as e:
         # Handle any exceptions that might occur
         import traceback
