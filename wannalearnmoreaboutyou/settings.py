@@ -81,7 +81,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-l)f4sb=-li1u$#1=s$^(+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['wannalearnmoreaboutyou.onrender.com']
+ALLOWED_HOSTS = ['wannalearnmoreaboutyou.onrender.com', '127.0.0.1', 'localhost']
 
 # Ensure HTTPS is handled correctly on Render
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -177,7 +177,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     BASE_DIR / "static",
