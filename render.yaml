@@ -12,6 +12,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.6
+      - key: DJANGO_SETTINGS_MODULE
+        value: wannalearnmoreaboutyou.settings
     
     # 构建命令 - 安装依赖并收集静态文件
     buildCommand: "./build.sh"
