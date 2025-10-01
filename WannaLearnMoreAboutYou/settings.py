@@ -174,6 +174,10 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# Media files (Private files)
+MEDIA_URL = '/private/'
+MEDIA_ROOT = PRIVATE_FILES_DIR
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
