@@ -48,7 +48,7 @@ def get_quiz_questions():
             ]
         },
         {
-            "text": "请从模糊的高中毕业照中找出我（四位阿拉伯数字坐标，从下往上从左往右，如第九排第六十个0960）",
+            "text": "看看能不能从模糊的高中毕业照中找出我嘿嘿（四位阿拉伯数字坐标，从下往上从左往右，如第九排第六十个0960）",
             "answer": answer2,
             "image": "/static/graduation_photo.jpg",  # 毕业照图片路径
             "hints": [  # 添加提示
