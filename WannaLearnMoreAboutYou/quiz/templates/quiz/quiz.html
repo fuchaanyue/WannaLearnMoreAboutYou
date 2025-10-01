@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>小测验</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            background: #262626; /* 85% black equivalent - 15% gray */
+            color: #f0f0f0; /* softer white */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 20px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .progress {
+            font-size: 18px;
+            font-weight: 300;
+            color: #d0d0d0; /* softer gray */
+            margin-bottom: 50px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .question {
+            font-size: 28px;
+            font-weight: 400;
+            color: #f0f0f0; /* softer white */
+            margin-bottom: 50px;
+            line-height: 1.5;
+        }
+        
+        .form-wrapper {
+            background: transparent;
+            padding: 0;
+        }
+        
+        .form-group {
+            margin: 30px 0;
+        }
+        
+        label {
+            display: block;
+            font-size: 20px;
+            font-weight: 300;
+            margin-bottom: 25px;
+            color: #f0f0f0; /* softer white */
+            letter-spacing: 0.5px;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 22px 0;
+            font-size: 20px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #888888; /* softer gray */
+            color: #f0f0f0; /* softer white */
+            transition: all 0.3s ease;
+            box-shadow: none;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-bottom: 1px solid #ffffff;
+        }
+        
+        input[type="text"]::placeholder {
+            color: #999999; /* softer gray */
+            font-weight: 300;
+        }
+        
+        input[type="text"]:valid {
+            border-bottom: 1px solid #777777;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 22px 0;
+            font-size: 20px;
+            background: transparent;
+            color: #f0f0f0; /* softer white */
+            border: none;
+            border-bottom: 1px solid #555555;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-align: left;
+            flex: 1;
+            min-width: 120px;
+            position: relative;
+        }
+        
+        button:after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #f0f0f0;
+            transition: width 0.3s ease;
+        }
+        
+        button:hover:after {
+            width: 100%;
+        }
+        
+        .hint-button {
+            border-bottom: 1px solid #555555;
+            font-weight: 300;
+        }
+        
+        .hint-button:after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #bbbbbb;
+            transition: width 0.3s ease;
+        }
+        
+        .hint-button:hover:after {
+            width: 100%;
+        }
+        
+        .question-image {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0 40px 0;
+            border: 1px solid #555555;
+        }
+        
+        .hint {
+            color: #bbbbbb; /* softer gray */
+            font-size: 16px;
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 1px solid #888888; /* softer gray */
+            font-weight: 300;
+        }
+        
+        .hint-image {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+            border: 1px solid #555555;
+        }
+        
+        .hint-progress {
+            color: #999999; /* softer gray */
+            font-size: 14px;
+            margin: 10px 0 10px 0;
+            font-weight: 300;
+        }
+        
+        .error {
+            color: #ff6666;
+            font-size: 16px;
+            margin-top: 25px;
+            padding-bottom: 20px;
+            font-weight: 300;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .nav-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            /* 移除了边框 */
+            border: none;
+            background: transparent;
+            color: #bbbbbb; /* softer gray */
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 300;
+        }
+        
+        .nav-button:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #f0f0f0;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-button:hover:after {
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 30px 15px;
+            }
+            
+            .question {
+                font-size: 20px;
+            }
+            
+            label, input[type="text"], button {
+                font-size: 16px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .progress {
+                font-size: 14px;
+                margin-bottom: 30px;
+            }
+            
+            .question {
+                font-size: 18px;
+                margin-bottom: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-buttons">
+            <a href="{% url 'index' %}" class="nav-button">← 返回首页</a>
+            <!-- 修改"返回上一级"按钮，使其返回上一个题目 -->
+            {% if question_number > 1 %}
+                <a href="{% url 'previous_question' %}" class="nav-button">返回上一级</a>
+            {% else %}
+                <a href="javascript:history.back()" class="nav-button">返回上一级</a>
+            {% endif %}
+        </div>
+        
+        <div class="progress">
+            题目 {{ question_number }} / {{ total_questions }}
+        </div>
+        
+        <div class="question">
+            {{ question.text }}
+        </div>
+        
+        {% if question.image %}
+            <img src="{{ question.image }}" alt="题目图片" class="question-image">
+        {% endif %}
+        
+        <div class="form-wrapper">
+            <form method="post" action="{% url 'quiz_post' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="answer">你的答案：</label>
+                    <input type="text" id="answer" name="answer" placeholder="请输入你的答案">
+                </div>
+                <div class="form-group">
+                    <div class="buttons">
+                        <button type="submit">提交</button>
+                        <button type="submit" name="hint" value="1" class="hint-button">
+                            {% if hint_index < total_hints %}
+                                {% if hint_index == 0 %}
+                                    提示
+                                {% elif hint_index == 1 %}
+                                    再提示
+                                {% elif hint_index == 2 %}
+                                    再再提示
+                                {% elif hint_index == 3 %}
+                                    再再再提示
+                                {% elif hint_index == 4 %}
+                                    再再再再提示
+                                {% endif %}
+                            {% else %}
+                                没提示啦
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+                {% if error %}
+                    <div class="error">{{ error }}</div>
+                {% endif %}
+                {% for hint_item in displayed_hints %}
+                    <div class="hint-progress">提示 {{ hint_item.index }}:</div>
+                    {% if hint_item.hint.type == "image" %}
+                        <img src="{{ hint_item.hint.content }}" alt="提示图片" class="hint-image">
+                    {% else %}
+                        <div class="hint">{{ hint_item.hint.content }}</div>
+                    {% endif %}
+                {% endfor %}
+            </form>
+        </div>
+    </div>
+</body>
+</html>
