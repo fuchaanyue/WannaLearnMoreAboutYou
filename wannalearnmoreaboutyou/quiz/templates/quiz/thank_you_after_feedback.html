@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>感谢</title>
+    {% load static %}
     <style>
         * {
             margin: 0;
@@ -132,7 +133,8 @@
             <div class="qrcode-label">
                 如果你愿意<br><br>
                 欢迎你添加我的小号</div>
-            <img class="qrcode-image" src="{% url 'qrcode' %}" alt="WeChat QR Code">
+            <!-- 修改为使用静态文件路径 -->
+            <img class="qrcode-image" src="{% static 'wechat_qr.jpg' %}" alt="WeChat QR Code">
             <div class="qrcode-note">请添加的时候备注填写你希望我对你的称呼哟</div>
         </div>
     </div>
