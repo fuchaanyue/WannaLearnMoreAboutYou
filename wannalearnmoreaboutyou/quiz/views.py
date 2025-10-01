@@ -426,8 +426,13 @@ def feedback(request):
                     import threading
                     def send_email_async(email):
                         try:
+                            print(f"开始发送邮件到: {settings.EMAIL_HOST_USER}")
                             result = email.send()
                             print(f"邮件发送结果: {result}")
+                            if result == 0:
+                                print("警告：邮件发送可能失败，返回值为0")
+                            else:
+                                print(f"邮件发送成功，发送了 {result} 封邮件")
                         except Exception as e:
                             import traceback
                             print(f"异步发送邮件失败: {e}")
@@ -550,18 +555,24 @@ def qrcode_image(request):
         if 'RENDER' in os.environ:
             # In Render, use the mounted file
             qr_code_path = Path('/etc/secrets/wechat_qr')
+            print(f"在Render环境中查找二维码: {qr_code_path}")
         else:
             # Local development or other environments
             from django.conf import settings
             qr_code_path = settings.PRIVATE_FILES_DIR / "wechat_qr.jpg"
+            print(f"在本地环境中查找二维码: {qr_code_path}")
         
+        print(f"二维码路径是否存在 (.jpg): {qr_code_path.exists()}")
         if not qr_code_path.exists():
             # Try with .png extension
             qr_code_path = qr_code_path.with_suffix('.png')
+            print(f"二维码路径是否存在 (.png): {qr_code_path.exists()}")
             
         if not qr_code_path.exists():
+            print(f"二维码文件未找到: {qr_code_path}")
             return HttpResponse("QR code image not found", status=404)
         
+        print(f"成功找到二维码文件: {qr_code_path}")
         with open(qr_code_path, "rb") as f:
             return HttpResponse(f.read(), content_type="image/png")
     except Exception as e:
