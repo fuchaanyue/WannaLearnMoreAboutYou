@@ -76,7 +76,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-l)f4sb=-li1u$#1=s$^(+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+ALLOWED_HOSTS = ['wannalearnmoreaboutyou.onrender.com']
+
+# Ensure HTTPS is handled correctly on Render
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Get quiz answer from environment variable
 QUIZ_ANSWER = config("QUIZ_ANSWER", default="2")
