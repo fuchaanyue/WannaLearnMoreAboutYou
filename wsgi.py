@@ -1,5 +1,5 @@
 """
-WSGI config for WannaLearnMoreAboutYou project.
+WSGI config for wannalearnmoreaboutyou project.
 
 This is a compatibility wrapper to support both uppercase and lowercase module imports.
 """
@@ -14,7 +14,7 @@ if str(current_path) not in sys.path:
     sys.path.insert(0, str(current_path))
 
 # Set the correct Django settings module
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'WannaLearnMoreAboutYou.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wannalearnmoreaboutyou.settings')
 
 from django.core.wsgi import get_wsgi_application
 
